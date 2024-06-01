@@ -6,10 +6,14 @@
 
 #include <iostream>
 #include <vector>
+#include <string>
+#include <cmath>
 #include <mpi.h>
 #include "writeVTK.hpp"
 #include <fstream>
 #include "json.hpp"
+using json=nlohmann::json;// to make life easier
+#include"muparser_fun.hpp"
 
 int main(int argc, char **argv)
 {
@@ -27,15 +31,20 @@ if(rank==0){
       // Opening the file with data.
       // Read from a file
       std::ifstream ifile("data.json");//open file
-      using json=nlohmann::json;// to make life easier
-      json j1;// create a json object
-      ifile >>j1;//load the file in the json object
+      
+      json data = json::parse(ifile);// create a json object
+      //ifile >>j1;//load the file in the json object
       ifile.close();// close file
       // Extract data. you need to use get<type> to select the type
       // Alternatively, you may use the utility value
-      auto a = j1["a"].get<double>();// get data from json object
-      auto b = j1["b"].get<double>();
-      auto n = j1["n"].get<unsigned int>();
+      //auto a = j["a"].get<double>();// get data from json object
+      const double n = data.value("n", 0.0);
+      std::cout << n << std::endl;
+    std::string funString = data.value("fun","");
+    MuparserFun fun(funString);
+    std::cout << fun(1.0, 2.0) << std::endl;
+      //auto b = j1["b"].get<double>();
+      //auto n = j1["n"].get<unsigned int>();
         int NX, NY;
         NX = 50;
         NY = 30;
@@ -45,7 +54,7 @@ if(rank==0){
   hy = 1.0/ (NY+1);
 
   std::vector<std::vector<double>> exacSol;
-
+/*
   double x,y;
   auto  fun = [](const double & x, const double & y){ return x*y;};
 
@@ -61,7 +70,7 @@ if(rank==0){
 
     generateVTKFile("solution.vtk", exacSol, NX,NY, hx, hy);
 
-
+*/
     MPI_Finalize();
 }
 
